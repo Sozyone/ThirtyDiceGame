@@ -5,7 +5,7 @@ interface GameLogicProvider {
     var diceHeld: List<Boolean>
     var rollsLeft: Int
     var rollButtonText: String
-    var roundScore: Int
+    var roundScores: Map<String, Int>
     var totalScore: Int
     var roundCount: Int
     var selectedScoringOption: String

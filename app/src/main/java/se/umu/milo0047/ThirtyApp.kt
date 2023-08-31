@@ -27,12 +27,12 @@ fun ThirtyApp(gameViewModel: GameViewModel) {
     var diceHeld by viewModel::diceHeld
     var rollsLeft by viewModel::rollsLeft
     var rollButtonText by viewModel::rollButtonText
-    var roundScore by viewModel::roundScore
     var totalScore by viewModel::totalScore
     val roundCount by viewModel::roundCount
     val selectedScoringOption by viewModel::selectedScoringOption
     var usedScoringOptions by viewModel::usedScoringOptions
     var isScoringMenuOpen by viewModel::isScoringMenuOpen
+    var roundScores by viewModel::roundScores
 
     // Game UI
     Column(
@@ -86,22 +86,18 @@ fun ThirtyApp(gameViewModel: GameViewModel) {
         // Score button
         Button(
             onClick = {
-                roundScore = viewModel.calculateScore(selectedScoringOption, diceValues)
-                totalScore += roundScore
+                val score = viewModel.calculateScore(selectedScoringOption, diceValues)
+                roundScores = roundScores + (selectedScoringOption to score)
+                totalScore += score
                 usedScoringOptions = usedScoringOptions + selectedScoringOption
                 viewModel.resetRound(selectedScoringOption)
+
             },
             modifier = Modifier.fillMaxWidth(),
             enabled = selectedScoringOption != "Select scoring option" && rollsLeft == 0
         ) {
             Text(text = "Score", style = TextStyle(fontSize = 20.sp))
         }
-
-        Text(
-            text = "Round Score: $roundScore",
-            style = TextStyle(fontSize = 20.sp),
-            modifier = Modifier.padding(top = 8.dp)
-        )
 
         Text(
             text = "Total Score: $totalScore",
@@ -114,12 +110,5 @@ fun ThirtyApp(gameViewModel: GameViewModel) {
             style = TextStyle(fontSize = 20.sp),
             modifier = Modifier.padding(top = 8.dp)
         )
-
-        // Shows the game result after 10 rounds.
-        if (roundCount > 10) {
-            GameResult(totalScore = totalScore, onRestart = {
-                viewModel.restartGame()
-            })
-        }
     }
 }

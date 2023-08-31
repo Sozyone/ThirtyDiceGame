@@ -15,7 +15,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            ThirtyApp(gameViewModel)
+            if (isGameEnded()) {
+                GameResult(gameViewModel.totalScore, gameViewModel.roundScores) {
+                    gameViewModel.restartGame()
+                }
+            } else {
+                ThirtyApp(gameViewModel)
+            }
         }
     }
 
@@ -33,5 +39,13 @@ class MainActivity : ComponentActivity() {
     override fun onPause() {
         super.onPause()
         gameViewModel.saveGameState(this)
+    }
+
+    /**
+     * Checks if the game has ended.
+     * @return `true` if the game has ended, `false` otherwise.
+     */
+    private fun isGameEnded(): Boolean {
+        return gameViewModel.roundCount > 10
     }
 }

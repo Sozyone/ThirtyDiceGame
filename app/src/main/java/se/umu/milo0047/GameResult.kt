@@ -17,13 +17,16 @@ import androidx.compose.ui.unit.sp
 
 /**
  * Composable that creates end game results.
- * It simply creates UI elements that shows that the game is finished,
- * the total score, and a restart button.
+ * Creates UI elements that shows that the game is finished.
+ * Displays the round scores for each options, total score, and a restart button.
  * @param totalScore The total score achieved in the game.
+ * @param roundScores A map containing round scores for different scoring options.
  * @param onRestart A callback function to restart the game.
  */
 @Composable
-fun GameResult(totalScore: Int, onRestart: () -> Unit) {
+fun GameResult(totalScore: Int, roundScores: Map<String, Int>, onRestart: () -> Unit) {
+    val sortedRoundScores = roundScores.toSortedMap()
+
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -31,8 +34,15 @@ fun GameResult(totalScore: Int, onRestart: () -> Unit) {
     ) {
         Text(text = "Finished", fontSize = 24.sp)
         Spacer(modifier = Modifier.height(16.dp))
+
+        for ((option, score) in sortedRoundScores) {
+            Text(text = "Score for option: $option is: $score", fontSize = 20.sp)
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+
         Text(text = "Total Score: $totalScore", fontSize = 24.sp)
         Spacer(modifier = Modifier.height(16.dp))
+
         Button(
             onClick = { onRestart() }, modifier = Modifier.fillMaxWidth()
         ) {
@@ -40,3 +50,4 @@ fun GameResult(totalScore: Int, onRestart: () -> Unit) {
         }
     }
 }
+

@@ -17,7 +17,7 @@ class GameViewModel : ViewModel(), GameLogicProvider {
     override var diceHeld by mutableStateOf(listOf(false, false, false, false, false, false))
     override var rollsLeft by mutableStateOf(3)
     override var rollButtonText by mutableStateOf("Play")
-    override var roundScore by mutableStateOf(0)
+    override var roundScores: Map<String, Int> by mutableStateOf(emptyMap())
     override var totalScore by mutableStateOf(0)
     override var roundCount by mutableStateOf(1)
     override var selectedScoringOption by mutableStateOf("Select scoring option")
@@ -57,7 +57,6 @@ class GameViewModel : ViewModel(), GameLogicProvider {
         diceHeld = listOf(false, false, false, false, false, false)
         rollsLeft = 3
         rollButtonText = "Play"
-        roundScore = 0
         totalScore = 0
         roundCount = 1
         selectedScoringOption = "Select scoring option"
@@ -66,16 +65,16 @@ class GameViewModel : ViewModel(), GameLogicProvider {
     }
 
     /**
-     * Utility function to calculate score. Not perfect!!! But works kind of well.
-     * @param choice The choice made for the scoring option.
-     * @param diceValues The list of dice values.
+     * Calculate the score for a specific scoring option.
+     * @param choice The selected scoring option.
+     * @param diceValues The current values of the dice.
      * @return The calculated score.
      */
     fun calculateScore(choice: String, diceValues: List<Int>): Int {
         return when (choice) {
             "Low" -> diceValues.filter { it <= 3 }.sum()
             else -> {
-                val targetSum = choice.toInt()
+                val targetSum = choice.toIntOrNull() ?: 0
                 var score = 0
 
                 val combinations = mutableListOf<List<Int>>()
@@ -120,7 +119,9 @@ class GameViewModel : ViewModel(), GameLogicProvider {
             putBoolean("isScoringMenuOpen", isScoringMenuOpen)
             putString("selectedScoringOption", selectedScoringOption)
             putStringSet("usedScoringOptions", usedScoringOptions)
-            putInt("roundScore", roundScore)
+            roundScores.forEach { (key, value) ->
+                putInt("roundScore_$key", value)
+            }
             putInt("dice1Value", diceValues[0])
             putInt("dice2Value", diceValues[1])
             putInt("dice3Value", diceValues[2])
@@ -150,7 +151,15 @@ class GameViewModel : ViewModel(), GameLogicProvider {
         selectedScoringOption = prefs.getString("selectedScoringOption", "Select scoring option")
             ?: "Select scoring option"
         usedScoringOptions = prefs.getStringSet("usedScoringOptions", emptySet()) ?: emptySet()
-        roundScore = prefs.getInt("roundScore", 0)
+        val loadedRoundScores = mutableMapOf<String, Int>()
+        prefs.all.keys.forEach { key ->
+            if (key.startsWith("roundScore_")) {
+                val scoringOption = key.substringAfter("roundScore_")
+                val score = prefs.getInt(key, 0)
+                loadedRoundScores[scoringOption] = score
+            }
+        }
+        roundScores = loadedRoundScores.toMap()
         diceValues = listOf(
             prefs.getInt("dice1Value", 1),
             prefs.getInt("dice2Value", 2),
