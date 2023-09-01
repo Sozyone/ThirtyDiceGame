@@ -66,6 +66,7 @@ class GameViewModel : ViewModel(), GameLogicProvider {
 
     /**
      * Calculate the score for a specific scoring option.
+     * Not optimized because of all the nested for loops, but it is still easy to understand and it works.
      * @param choice The selected scoring option.
      * @param diceValues The current values of the dice.
      * @return The calculated score.
@@ -77,23 +78,99 @@ class GameViewModel : ViewModel(), GameLogicProvider {
                 val targetSum = choice.toIntOrNull() ?: 0
                 var score = 0
 
-                val combinations = mutableListOf<List<Int>>()
-                for (i in diceValues.indices) {
-                    for (j in i until diceValues.size) {
-                        combinations.add(diceValues.subList(i, j + 1))
-                    }
-                }
+                // Sort the dice values in descending order
+                val sortedDiceValues = diceValues.sortedDescending().toMutableList()
+                // Marks used indices to not use them again
+                val usedIndices = mutableSetOf<Int>()
 
-                for (combination in combinations) {
-                    val sum = combination.sum()
-                    if (sum == targetSum) {
-                        score += sum
+                // 1st Loop through the dice values
+                outer@ for (i in sortedDiceValues.indices) {
+                    if (i in usedIndices) continue // Skip used dice
+                    val firstDiceValue = sortedDiceValues[i]
+                    // Check if the first dice value matches the chosen scoring option
+                    if (firstDiceValue == targetSum) {
+                        // If it's a match, add the value to the score and add the index to usedIndices
+                        score += firstDiceValue
+                        usedIndices.add(i)
+                    } else {
+                        // 2nd Loop through the remaining dice values to find combinations
+                        for (j in (i + 1) until sortedDiceValues.size) {
+                            if (j in usedIndices) continue // Skip used dice
+                            val secondDiceValue = sortedDiceValues[j]
+                            // Check if the first and second dice values sum up to the chosen scoring option
+                            if (firstDiceValue + secondDiceValue == targetSum) {
+                                // If it's a match, add the values to the score and add the indices to usedIndices
+                                score += firstDiceValue + secondDiceValue
+                                usedIndices.add(i)
+                                usedIndices.add(j)
+                                continue@outer  // Continue to the next iteration of the outer loop
+                            } else {
+                                // 3rd Loop through additional dice values for combinations
+                                for (k in (j + 1) until sortedDiceValues.size) {
+                                    if (k in usedIndices) continue // Skip used dice
+                                    val thirdDiceValue = sortedDiceValues[k]
+                                    if (firstDiceValue + secondDiceValue + thirdDiceValue == targetSum) {
+                                        score += firstDiceValue + secondDiceValue + thirdDiceValue
+                                        usedIndices.add(i)
+                                        usedIndices.add(j)
+                                        usedIndices.add(k)
+                                        continue@outer
+                                    } else {
+                                        // 4th Loop through additional dice values for combinations
+                                        for (l in (k + 1) until sortedDiceValues.size) {
+                                            if (l in usedIndices) continue // Skip used dice
+                                            val forthDiceValue = sortedDiceValues[l]
+                                            if (firstDiceValue + secondDiceValue + thirdDiceValue + forthDiceValue == targetSum) {
+                                                score += firstDiceValue + secondDiceValue + thirdDiceValue + forthDiceValue
+                                                usedIndices.add(i)
+                                                usedIndices.add(j)
+                                                usedIndices.add(k)
+                                                usedIndices.add(l)
+                                                continue@outer
+                                            } else {
+                                                // 5th Loop through additional dice values for combinations
+                                                for (m in (l + 1) until sortedDiceValues.size) {
+                                                    if (l in usedIndices) continue // Skip used dice
+                                                    val fifthDiceValue = sortedDiceValues[l]
+                                                    if (firstDiceValue + secondDiceValue + thirdDiceValue + forthDiceValue + fifthDiceValue == targetSum) {
+                                                        score += firstDiceValue + secondDiceValue + thirdDiceValue + forthDiceValue + fifthDiceValue
+                                                        usedIndices.add(i)
+                                                        usedIndices.add(j)
+                                                        usedIndices.add(k)
+                                                        usedIndices.add(l)
+                                                        usedIndices.add(m)
+                                                        continue@outer
+                                                    } else {
+                                                        // 6th Loop through additional dice values for combinations
+                                                        for (n in (m + 1) until sortedDiceValues.size) {
+                                                            if (l in usedIndices) continue // Skip used dice
+                                                            val sixthDiceValue = sortedDiceValues[l]
+                                                            if (firstDiceValue + secondDiceValue + thirdDiceValue + forthDiceValue + fifthDiceValue + sixthDiceValue == targetSum) {
+                                                                score += firstDiceValue + secondDiceValue + thirdDiceValue + forthDiceValue + fifthDiceValue + sixthDiceValue
+                                                                usedIndices.add(i)
+                                                                usedIndices.add(j)
+                                                                usedIndices.add(k)
+                                                                usedIndices.add(l)
+                                                                usedIndices.add(m)
+                                                                usedIndices.add(n)
+                                                                continue@outer
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 score
             }
         }
     }
+
 
     /**
      * Utility function to update the selected choice in the scoring menu
